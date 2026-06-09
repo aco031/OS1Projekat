@@ -3,128 +3,111 @@
 //
 
 #include "../lib/hw.h"
-#include  "../h/ccb.hpp"
-#include "../h/print.hpp"
-/*
 #include "../h/tcb.hpp"
-#include "../test/printing.hpp"
-#include "../h/syscall_c.hpp"
-*/
+#include "../h/print.hpp"
 
+void workerBodyA()
+{
+    for (uint64 i = 0; i < 10; i++)
+    {
+        printString("A: i=");
+        printInteger(i);
+        printString("\n");
+        for (uint64 j = 0; j < 10000; j++)
+        {
+            for (uint64 k = 0; k < 30000; k++)
+            {
+                // busy wait
+            }
+//            TCB::yield();
+        }
+    }
+}
+
+void workerBodyB()
+{
+    for (uint64 i = 0; i < 16; i++)
+    {
+        printString("B: i=");
+        printInteger(i);
+        printString("\n");
+        for (uint64 j = 0; j < 10000; j++)
+        {
+            for (uint64 k = 0; k < 30000; k++)
+            {
+                // busy wait
+            }
+//            TCB::yield();
+        }
+    }
+}
 
 static uint64 fibonacci(uint64 n)
 {
     if (n == 0 || n == 1) { return n; }
-    if (n % 4 == 0) {
-        //printString("fibonacci yield\n");
-        //thread_dispatch();
-
-        //CCB::yield();
-    }
+    if (n % 10 == 0) { TCB::yield(); }
     return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-void workerBodyA(void* arg)
+void workerBodyC()
 {
     uint8 i = 0;
     for (; i < 3; i++)
     {
-        printString("A: i=");
-        printInt(i);
+        printString("C: i=");
+        printInteger(i);
         printString("\n");
     }
 
-    printString("A: yield\n");
+    printString("C: yield\n");
     __asm__ ("li t1, 7");
-    //thread_dispatch();
-    //CCB::yield();
+    TCB::yield();
 
     uint64 t1 = 0;
     __asm__ ("mv %[t1], t1" : [t1] "=r"(t1));
 
-    printString("A: t1=");
-    printInt(t1);
+    printString("C: t1=");
+    printInteger(t1);
     printString("\n");
 
-
-
-    uint64 result = fibonacci(20);
-    printString("A: fibonaci=");
-    printInt(result);
+    uint64 result = fibonacci(12);
+    printString("C: fibonaci=");
+    printInteger(result);
     printString("\n");
 
     for (; i < 6; i++)
     {
-        printString("A: i=");
-        printInt(i);
+        printString("C: i=");
+        printInteger(i);
         printString("\n");
     }
-
-    //CCB::running->setFinished(true);
-    //CCB::yield();
-
-    //thread_dispatch();
+//    TCB::yield();
 }
 
-void workerBodyB(void* arg)
+void workerBodyD()
 {
     uint8 i = 10;
-    //thread_join((thread_t) arg);
     for (; i < 13; i++)
     {
-        printString("B: i=");
-        printInt(i);
+        printString("D: i=");
+        printInteger(i);
         printString("\n");
     }
 
-    printString("B: yield\n");
+    printString("D: yield\n");
     __asm__ ("li t1, 5");
-    //thread_dispatch();
+    TCB::yield();
 
-    //CCB::yield();
-
-    uint64 result = fibonacci(23);
-    printString("B: fibonaci=");
-    printInt(result);
+    uint64 result = fibonacci(16);
+    printString("D: fibonaci=");
+    printInteger(result);
     printString("\n");
 
     for (; i < 16; i++)
     {
-        printString("B: i=");
-        printInt(i);
+        printString("D: i=");
+        printInteger(i);
         printString("\n");
     }
-
-    //CCB::running->setFinished(true);
-    //CCB::yield();
-    //thread_dispatch();
+//    TCB::yield();
 }
-/*
-//test semafora
-void workerBodyC(void* arg) {
-    printString("C: poziva se dispatch1.\n");
-    thread_dispatch();
-    printString("C: poziva se dispatch2..\n");
-    thread_dispatch();
-    printString("C: poziva se dispatch3...\n");
-    thread_dispatch();
-    printString("C: poziva se dispatch4....\n");
-    printString("C: Signal semafora!\n");
-    sem_close((sem_t) arg);
-    thread_dispatch();
-    printString("C: posle signala..\n");
-    printString("C: posle signala.2.\n");
-}
-
-
-void workerBodyD(void *arg) {
-    printString("D: Usli smo u D 1. put\n");
-    printString("D: Cekamo na semaforu..\n");
-
-    int returnValue = sem_wait((sem_t) arg);
-
-    printString("D: rezultat: ");
-    printInt(returnValue);
-    printString("\nD: izlazim automatski, pozdrav!\n");
-}
-*/

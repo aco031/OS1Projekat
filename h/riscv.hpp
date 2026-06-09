@@ -7,34 +7,6 @@
 
 #include "../lib/hw.h"
 
-enum opcodes{
-    MEM_ALLOC = 0x01,
-    MEM_FREE = 0x02,
-    MEM_GET_FREE_SPACE = 0x03,
-    MEM_GET_LARGEST_BLOCK_SIZE= 0x04,
-    THREAD_CREATE = 0x11,
-    THREAD_EXIT = 0x12,
-    THREAD_DISPATCH = 0x13,
-    SEM_OPEN = 0x21,
-    SEM_CLOSE = 0x22,
-    SEM_WAIT = 0x23,
-    SEM_SIGNAL = 0x24,
-    TIME_SLEEP = 0x31,
-    GETC = 0x41,
-    PUTC = 0x42
-};
-
-
-
-
-enum Interrupts{
-    ECALL_USER = 0x0000000000000008UL,
-    ECALL_SUPER = 0x0000000000000009UL,
-    SOFTWARE = 0x8000000000000001UL,
-    EXTERNAL = 0x8000000000000009UL,
-};
-
-
 class Riscv
 {
 public:
@@ -110,7 +82,7 @@ public:
 private:
 
     // supervisor trap handler
-    void handleSupervisorTrap();
+    static void handleSupervisorTrap();
 
 };
 

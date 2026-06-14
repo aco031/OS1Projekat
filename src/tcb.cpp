@@ -38,7 +38,7 @@ void TCB::dispatch()
 {
     TCB *old = running;
 
-    if (old != nullptr && !old->isFinished())
+    if (old != nullptr && !old->isFinished() && !old->isBlocked())
     {
         Scheduler::put(old);
     }
@@ -47,13 +47,20 @@ void TCB::dispatch()
 
     if (next == nullptr)
     {
-        running = old;
-        return;
+        if (old != nullptr && !old->isFinished() && !old->isBlocked())
+        {
+            running = old;
+            return;
+        }
+
+        // Deadlock situacija: nema spremne niti, a stara nit ne sme da nastavi
+        // jer je finished ili blocked. Za sada nemaš idle nit, pa ovde stajemo.
+        while (true) {}
     }
 
     running = next;
 
-    if (old != running)
+    if (old != nullptr && old != running)
     {
         TCB::contextSwitch(&old->context, &running->context);
     }

@@ -17,6 +17,25 @@ Thread::Thread()
 
 Thread::~Thread()
 {
+    if (myHandle != nullptr && myHandle->isFinished())
+    {
+        delete myHandle;
+        myHandle = nullptr;
+    }
+}
+
+char Console::getc()
+{
+    return ::getc();
+}
+
+void Console::putc(char c)
+{
+    ::putc(c);
+}
+
+/*Thread::~Thread()
+{
     if (myHandle == nullptr)
     {
         return;
@@ -31,7 +50,7 @@ Thread::~Thread()
 
     delete myHandle;
     myHandle = nullptr;
-}
+}*/
 
 int Thread::start()
 {
@@ -67,4 +86,59 @@ void Thread::runWrapper(void* thread)
     {
         ((Thread*) thread)->run();
     }
+}
+
+Semaphore::Semaphore(unsigned init)
+    : myHandle(nullptr)
+{
+    sem_open(&myHandle, init);
+}
+
+Semaphore::~Semaphore()
+{
+    if (myHandle != nullptr)
+    {
+        sem_close(myHandle);
+        myHandle = nullptr;
+    }
+}
+
+int Semaphore::wait()
+{
+    if (myHandle == nullptr)
+    {
+        return -1;
+    }
+
+    return sem_wait(myHandle);
+}
+
+int Semaphore::signal()
+{
+    if (myHandle == nullptr)
+    {
+        return -1;
+    }
+
+    return sem_signal(myHandle);
+}
+
+int Semaphore::waitN(unsigned n)
+{
+    if (myHandle == nullptr)
+    {
+        return -1;
+    }
+
+    return sem_wait_n(myHandle, n);
+}
+
+int Semaphore::signalN(unsigned n)
+{
+    if (myHandle == nullptr)
+    {
+        return -1;
+    }
+
+    return sem_signal_n(myHandle, n);
 }

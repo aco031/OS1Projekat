@@ -5,6 +5,7 @@
 #include "../h/riscv.hpp"
 #include "../h/tcb.hpp"
 #include "../h/print.hpp"
+#include "../h/sem.hpp"
 #include "../lib/console.h"
 
 #define READ_SAVED_REG(offset, variable) \
@@ -109,6 +110,157 @@ void Riscv::handleSupervisorTrap()
 
                 break;
             }
+
+            case 0x21:
+            {
+                // sem_open(sem_t* handle, unsigned init)
+
+                uint64 rawHandle;
+                uint64 rawInit;
+
+                READ_SAVED_REG(88, rawHandle);   // saved a1
+                READ_SAVED_REG(96, rawInit);     // saved a2
+
+                _sem** handle = (_sem**) rawHandle;
+                unsigned init = (unsigned) rawInit;
+
+                if (handle == nullptr)
+                {
+                    WRITE_SAVED_A0((uint64)-1);
+                    break;
+                }
+
+                *handle = new _sem(init);
+
+                if (*handle != nullptr)
+                {
+                    WRITE_SAVED_A0(0);
+                }
+                else
+                {
+                    WRITE_SAVED_A0((uint64)-1);
+                }
+
+                break;
+            }
+
+            case 0x22:
+            {
+                // sem_close(sem_t handle)
+
+                uint64 rawHandle;
+                READ_SAVED_REG(88, rawHandle);   // saved a1
+
+                _sem* handle = (_sem*) rawHandle;
+
+                if (handle == nullptr)
+                {
+                    WRITE_SAVED_A0((uint64)-1);
+                    break;
+                }
+
+                int ret = handle->close();
+
+                if (ret == 0)
+                {
+                    delete handle;
+                }
+
+                WRITE_SAVED_A0(ret);
+                break;
+            }
+
+            case 0x23:
+            {
+                // sem_wait(sem_t id)
+
+                uint64 rawHandle;
+                READ_SAVED_REG(88, rawHandle);   // saved a1
+
+                _sem* handle = (_sem*) rawHandle;
+
+                if (handle == nullptr)
+                {
+                    WRITE_SAVED_A0((uint64)-1);
+                    break;
+                }
+
+                int ret = handle->wait();
+
+                WRITE_SAVED_A0(ret);
+                break;
+            }
+
+            case 0x24:
+            {
+                // sem_signal(sem_t id)
+
+                uint64 rawHandle;
+                READ_SAVED_REG(88, rawHandle);   // saved a1
+
+                _sem* handle = (_sem*) rawHandle;
+
+                if (handle == nullptr)
+                {
+                    WRITE_SAVED_A0((uint64)-1);
+                    break;
+                }
+
+                int ret = handle->signal();
+
+                WRITE_SAVED_A0(ret);
+                break;
+            }
+
+			case 0x25:
+			{
+    			// sem_wait_n(sem_t id, unsigned n)
+
+    			uint64 rawHandle;
+    			uint64 rawN;
+
+    			READ_SAVED_REG(88, rawHandle);   // saved a1
+   				READ_SAVED_REG(96, rawN);        // saved a2
+
+    			_sem* handle = (_sem*) rawHandle;
+    			unsigned n = (unsigned) rawN;
+
+    			if (handle == nullptr)
+    			{
+        			WRITE_SAVED_A0((uint64)-1);
+        			break;
+    			}
+
+    			int ret = handle->waitN(n);
+
+				WRITE_SAVED_A0(ret);
+				break;
+			}
+
+			case 0x26:
+			{
+    			// sem_signal_n(sem_t id, unsigned n)
+
+    			uint64 rawHandle;
+    			uint64 rawN;
+
+    			READ_SAVED_REG(88, rawHandle);   // saved a1
+    			READ_SAVED_REG(96, rawN);        // saved a2
+
+    			_sem* handle = (_sem*) rawHandle;
+    			unsigned n = (unsigned) rawN;
+
+    			if (handle == nullptr)
+    			{
+        			WRITE_SAVED_A0((uint64)-1);
+        			break;
+    			}
+
+    			int ret = handle->signalN(n);
+
+    			WRITE_SAVED_A0(ret);
+    			break;
+			}
 
             default:
             {

@@ -1,5 +1,35 @@
 #include "../h/syscall_c.hpp"
 
+//
+#include "../lib/mem.h"
+#include "../lib/console.h"
+
+void* mem_alloc(size_t size)
+{
+    return __mem_alloc(size);
+}
+
+int mem_free(void* ptr)
+{
+    return __mem_free(ptr);
+}
+
+int time_sleep(time_t)
+{
+    return -1;
+}
+
+char getc()
+{
+    return __getc();
+}
+
+void putc(char c)
+{
+    __putc(c);
+}
+//
+
 int thread_create(thread_t* handle, void (*start_routine)(void*), void* arg)
 {
     register uint64 a0 asm("a0") = 0x11;
@@ -41,4 +71,97 @@ void thread_dispatch()
         :
         : "memory"
     );
+}
+
+int sem_open(sem_t* handle, unsigned init)
+{
+    register uint64 a0 asm("a0") = 0x21;
+    register uint64 a1 asm("a1") = (uint64) handle;
+    register uint64 a2 asm("a2") = (uint64) init;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1), "r"(a2)
+        : "memory"
+    );
+
+    return (int) a0;
+}
+
+int sem_close(sem_t handle)
+{
+    register uint64 a0 asm("a0") = 0x22;
+    register uint64 a1 asm("a1") = (uint64) handle;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1)
+        : "memory"
+    );
+
+    return (int) a0;
+}
+
+int sem_wait(sem_t id)
+{
+    register uint64 a0 asm("a0") = 0x23;
+    register uint64 a1 asm("a1") = (uint64) id;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1)
+        : "memory"
+    );
+
+    return (int) a0;
+}
+
+int sem_signal(sem_t id)
+{
+    register uint64 a0 asm("a0") = 0x24;
+    register uint64 a1 asm("a1") = (uint64) id;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1)
+        : "memory"
+    );
+
+    return (int) a0;
+}
+
+int sem_wait_n(sem_t id, unsigned n)
+{
+    register uint64 a0 asm("a0") = 0x25;
+    register uint64 a1 asm("a1") = (uint64) id;
+    register uint64 a2 asm("a2") = (uint64) n;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1), "r"(a2)
+        : "memory"
+    );
+
+    return (int) a0;
+}
+
+int sem_signal_n(sem_t id, unsigned n)
+{
+    register uint64 a0 asm("a0") = 0x26;
+    register uint64 a1 asm("a1") = (uint64) id;
+    register uint64 a2 asm("a2") = (uint64) n;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1), "r"(a2)
+        : "memory"
+    );
+
+    return (int) a0;
 }

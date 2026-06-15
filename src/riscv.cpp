@@ -7,6 +7,7 @@
 #include "../h/print.hpp"
 #include "../h/sem.hpp"
 #include "../lib/console.h"
+#include "../h/memoryAllocator.hpp"
 
 #define READ_SAVED_REG(offset, variable) \
     __asm__ volatile("ld %0, " #offset "(s0)" : "=r"(variable))
@@ -21,6 +22,10 @@
 
 void Riscv::popSppSpie()
 {
+	// Nove korisnicke niti treba da krenu u korisnickom rezimu.
+    // SPP = 0 znaci da ce sret vratiti procesor u U-mode.
+    Riscv::mc_sstatus(Riscv::SSTATUS_SPP);
+
     __asm__ volatile("csrw sepc, ra");
     __asm__ volatile("sret");
 }
@@ -40,6 +45,32 @@ void Riscv::handleSupervisorTrap()
 
         switch (syscallCode)
         {
+			case 0x01:
+            {
+                // mem_alloc(size_t sizeInBlocks)
+
+                uint64 rawSize;
+                READ_SAVED_REG(88, rawSize); // saved a1
+
+                void* ret = MemoryAllocator::mem_alloc((size_t) rawSize);
+
+                WRITE_SAVED_A0((uint64) ret);
+                break;
+            }
+
+            case 0x02:
+            {
+                // mem_free(void* ptr)
+
+                uint64 rawPtr;
+                READ_SAVED_REG(88, rawPtr); // saved a1
+
+                int ret = MemoryAllocator::mem_free((void*) rawPtr);
+
+                WRITE_SAVED_A0(ret);
+                break;
+            }
+
             case 0x11:
             {
                 // thread_create(thread_t* handle, void (*body)(void*), void* arg)
@@ -262,6 +293,29 @@ void Riscv::handleSupervisorTrap()
     			break;
 			}
 
+			case 0x41:
+            {
+                // getc()
+
+                char c = __getc();
+
+                WRITE_SAVED_A0((uint64)c);
+                break;
+            }
+
+            case 0x42:
+            {
+                // putc(char c)
+
+                uint64 rawChar;
+                READ_SAVED_REG(88, rawChar); // saved a1
+
+                __putc((char)rawChar);
+
+                WRITE_SAVED_A0(0);
+                break;
+            }
+
             default:
             {
                 // Za sada ignorišemo ostale syscall kodove.
@@ -295,47 +349,34 @@ void Riscv::handleSupervisorTrap()
         // external interrupt / console
         console_handler();
     }
+    else if (scause == 0x0000000000000002UL)
+    {
+        // Illegal instruction.
+        // Test 7 namerno pokusava da izvrsi privilegovanu instrukciju iz korisnickog rezima.
+        // Ako dodjemo ovde, to znaci da se korisnicki kod stvarno izvrsava u U-mode.
+
+        const char* msg =
+            "\nIllegal instruction trap.\n"
+            "Ako je pokrenut TEST 7, ovo je ocekivano: korisnicki kod nije u S-mode.\n";
+
+        while (*msg != '\0')
+        {
+            __putc(*msg);
+            msg++;
+        }
+
+        while (true) {}
+    }
     else
     {
-        // unexpected trap cause
+        const char* msg = "\nUnexpected trap.\n";
+
+        while (*msg != '\0')
+        {
+            __putc(*msg);
+            msg++;
+        }
+
+        while (true) {}
     }
 }
-
-/*void Riscv::handleSupervisorTrap()
-{
-    uint64 scause = r_scause();
-    if (scause == 0x0000000000000008UL || scause == 0x0000000000000009UL)
-    {
-        // interrupt: no; cause code: environment call from U-mode(8) or S-mode(9)
-        uint64 volatile sepc = r_sepc() + 4;
-        uint64 volatile sstatus = r_sstatus();
-        TCB::timeSliceCounter = 0;
-        TCB::dispatch();
-        w_sstatus(sstatus);
-        w_sepc(sepc);
-    }
-    else if (scause == 0x8000000000000001UL)
-    {
-        // interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
-        mc_sip(SIP_SSIP);
-        TCB::timeSliceCounter++;
-        if (TCB::timeSliceCounter >= TCB::running->getTimeSlice())
-        {
-            uint64 volatile sepc = r_sepc();
-            uint64 volatile sstatus = r_sstatus();
-            TCB::timeSliceCounter = 0;
-            TCB::dispatch();
-            w_sstatus(sstatus);
-            w_sepc(sepc);
-        }
-    }
-    else if (scause == 0x8000000000000009UL)
-    {
-        // interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
-        console_handler();
-    }
-    else
-    {
-        // unexpected trap cause
-    }
-}*/

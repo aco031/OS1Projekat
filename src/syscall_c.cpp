@@ -1,17 +1,42 @@
 #include "../h/syscall_c.hpp"
-
-//
-#include "../lib/mem.h"
+#include "../h/memoryAllocator.hpp"
 #include "../lib/console.h"
 
 void* mem_alloc(size_t size)
 {
-    return __mem_alloc(size);
+    if (size == 0)
+    {
+        return nullptr;
+    }
+
+    size_t blocks = (size + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE;
+
+    register uint64 a0 asm("a0") = 0x01;
+    register uint64 a1 asm("a1") = (uint64) blocks;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1)
+        : "memory"
+    );
+
+    return (void*) a0;
 }
 
 int mem_free(void* ptr)
 {
-    return __mem_free(ptr);
+    register uint64 a0 asm("a0") = 0x02;
+    register uint64 a1 asm("a1") = (uint64) ptr;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1)
+        : "memory"
+    );
+
+    return (int) a0;
 }
 
 int time_sleep(time_t)
@@ -21,14 +46,30 @@ int time_sleep(time_t)
 
 char getc()
 {
-    return __getc();
+    register uint64 a0 asm("a0") = 0x41;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        :
+        : "memory"
+    );
+
+    return (char) a0;
 }
 
 void putc(char c)
 {
-    __putc(c);
+    register uint64 a0 asm("a0") = 0x42;
+    register uint64 a1 asm("a1") = (uint64) c;
+
+    __asm__ volatile(
+        "ecall"
+        : "+r"(a0)
+        : "r"(a1)
+        : "memory"
+    );
 }
-//
 
 int thread_create(thread_t* handle, void (*start_routine)(void*), void* arg)
 {

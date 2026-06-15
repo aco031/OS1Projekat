@@ -13,12 +13,4 @@ void workerBodyC(void* arg);
 
 void workerBodyD(void* arg);
 
-/*extern void workerBodyA();
-
-extern void workerBodyB();
-
-extern void workerBodyC();
-
-extern void workerBodyD();*/
-
 #endif //OS1_VEZBE07_RISCV_CONTEXT_SWITCH_2_INTERRUPT_WORKERS_HPP

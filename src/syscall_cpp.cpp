@@ -34,24 +34,6 @@ void Console::putc(char c)
     ::putc(c);
 }
 
-/*Thread::~Thread()
-{
-    if (myHandle == nullptr)
-    {
-        return;
-    }
-
-    // Minimalno "join" ponašanje za test:
-    // delete Thread objekta sačeka da se njegova nit stvarno završi.
-    while (!myHandle->isFinished())
-    {
-        thread_dispatch();
-    }
-
-    delete myHandle;
-    myHandle = nullptr;
-}*/
-
 int Thread::start()
 {
     if (myHandle != nullptr)
@@ -74,9 +56,7 @@ void Thread::dispatch()
 
 int Thread::sleep(time_t time)
 {
-    (void) time;
-
-    // Još nemaš time_sleep sistemski poziv.
+    //return time_sleep(time);
     return -1;
 }
 

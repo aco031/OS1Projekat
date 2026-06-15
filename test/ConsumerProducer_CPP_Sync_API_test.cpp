@@ -1,7 +1,6 @@
 #include "../h/syscall_cpp.hpp"
 
 #include "buffer_CPP_API.hpp"
-#include "printing.hpp" // moj dodatak
 
 static Semaphore* waitForAll;
 
@@ -29,8 +28,7 @@ void ProducerKeyboard::producerKeyboard(void *arg) {
 
     int key;
     int i = 0;
-    //while ((key = getc()) != 0x1b) {
-    while ((key = getc()) != 0x1b && key != 'q') {
+    while ((key = getc()) != 0x1b) {
         data->buffer->put(key);
         i++;
 

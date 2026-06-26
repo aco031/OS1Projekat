@@ -31,9 +31,6 @@ int _sem::waitN(unsigned n)
         return 0;
     }
 
-    // FIFO ponašanje:
-    // ako već neko čeka, nova nit ne preskače red,
-    // čak i ako trenutno ima dovoljno resursa za nju.
     if (blockedQueue.peekFirst() == nullptr && value >= n)
     {
         value -= n;

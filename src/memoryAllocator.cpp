@@ -21,7 +21,7 @@ void MemoryAllocator::init()
     uint64 start = (uint64) HEAP_START_ADDR;
     uint64 end = (uint64) HEAP_END_ADDR;
 
-    // Za svaki slucaj poravnamo heap na granice blokova.
+    // Poravnamo heap na granice blokova
     start = (start + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE * MEM_BLOCK_SIZE;
     end = end / MEM_BLOCK_SIZE * MEM_BLOCK_SIZE;
 
@@ -43,7 +43,7 @@ void* MemoryAllocator::mem_alloc(size_t size)
         return nullptr;
     }
 
-    // Treba nam jedan dodatni blok za header.
+    // Treba nam jedan dodatni blok za header
     size_t needed = size + 1;
 
     FreeMem* prev = nullptr;
@@ -53,7 +53,7 @@ void* MemoryAllocator::mem_alloc(size_t size)
     {
         if (curr->size >= needed)
         {
-            // Ako ostaje dovoljno prostora za novi slobodan fragment.
+            // Ako ostaje dovoljno prostora za novi slobodan fragment
             if (curr->size > needed)
             {
                 FreeMem* newFree = (FreeMem*) ((char*) curr + needed * MEM_BLOCK_SIZE);
@@ -73,7 +73,7 @@ void* MemoryAllocator::mem_alloc(size_t size)
             }
             else
             {
-                // Uzimamo ceo fragment.
+                // Uzimamo ceo fragment
                 if (prev != nullptr)
                 {
                     prev->next = curr->next;
@@ -86,7 +86,7 @@ void* MemoryAllocator::mem_alloc(size_t size)
 
             curr->next = nullptr;
 
-            // Korisniku vracamo adresu posle jednog header bloka.
+            // Korisniku vracamo adresu posle jednog header bloka
             return (char*) curr + MEM_BLOCK_SIZE;
         }
 
@@ -131,7 +131,7 @@ int MemoryAllocator::mem_free(void* ptr)
         freeMemHead = block;
     }
 
-    // Spoji sa sledecim ako su susedni.
+    // Spoji sa sledecim ako su susedni
     if (block->next != nullptr &&
         (char*) block + block->size * MEM_BLOCK_SIZE == (char*) block->next)
     {
@@ -139,7 +139,7 @@ int MemoryAllocator::mem_free(void* ptr)
         block->next = block->next->next;
     }
 
-    // Spoji sa prethodnim ako su susedni.
+    // Spoji sa prethodnim ako su susedni
     if (prev != nullptr &&
         (char*) prev + prev->size * MEM_BLOCK_SIZE == (char*) block)
     {

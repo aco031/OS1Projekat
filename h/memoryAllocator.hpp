@@ -12,10 +12,10 @@ class MemoryAllocator
 public:
     static void init();
 
-    // Koristi kernel/ABI: size je broj korisnickih blokova.
+    // Koristi kernel/ABI: size je broj korisnickih blokova
     static void* mem_alloc(size_t size);
 
-    // Koristi operator new/new[]: size je broj bajtova.
+    // Koristi operator new/new[]: size je broj bajtova
     static void* mem_allocBytes(size_t size);
 
     static int mem_free(void* ptr);

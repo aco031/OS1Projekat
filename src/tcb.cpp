@@ -53,8 +53,7 @@ void TCB::dispatch()
             return;
         }
 
-        // Deadlock situacija: nema spremne niti, a stara nit ne sme da nastavi
-        // jer je finished ili blocked. Za sada nemaš idle nit, pa ovde stajemo.
+        // Deadlock situacija: nema spremne niti, a stara nit ne sme da nastavi jer je finished ili blocked
         while (true) {}
     }
 
@@ -81,7 +80,7 @@ void TCB::threadWrapper()
 
     thread_exit();
 
-    // Ne bi trebalo nikad da se dođe ovde.
+    // Ne bi trebalo nikad da se dodje ovde
     while (true)
     {
         thread_dispatch();

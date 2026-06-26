@@ -22,8 +22,8 @@
 
 void Riscv::popSppSpie()
 {
-	// Nove korisnicke niti treba da krenu u korisnickom rezimu.
-    // SPP = 0 znaci da ce sret vratiti procesor u U-mode.
+	// Nove korisnicke niti treba da krenu u korisnickom rezimu
+    // SPP = 0 znaci da ce sret vratiti procesor u U-mode
     Riscv::mc_sstatus(Riscv::SSTATUS_SPP);
 
     __asm__ volatile("csrw sepc, ra");
@@ -93,8 +93,6 @@ void Riscv::handleSupervisorTrap()
                     break;
                 }
 
-                // Privremeno rešenje bez pravog mem_alloc:
-                // stack se alocira preko postojećeg operatora new[].
                 uint64* stack = new uint64[DEFAULT_STACK_SIZE];
 
                 if (stack == nullptr)
@@ -318,7 +316,7 @@ void Riscv::handleSupervisorTrap()
 
             default:
             {
-                // Za sada ignorišemo ostale syscall kodove.
+                // Ignorisemo ostale syscall kodove
                 break;
             }
         }
@@ -351,13 +349,12 @@ void Riscv::handleSupervisorTrap()
     }
     else if (scause == 0x0000000000000002UL)
     {
-        // Illegal instruction.
-        // Test 7 namerno pokusava da izvrsi privilegovanu instrukciju iz korisnickog rezima.
-        // Ako dodjemo ovde, to znaci da se korisnicki kod stvarno izvrsava u U-mode.
+        // Illegal instruction
+        // Test 7 namerno pokusava da izvrsi privilegovanu instrukciju iz korisnickog rezima
+        // Ako dodjemo ovde, to znaci da se korisnicki kod stvarno izvrsava u U-mode
 
         const char* msg =
-            "\nIllegal instruction trap.\n"
-            "Ako je pokrenut TEST 7, ovo je ocekivano: korisnicki kod nije u S-mode.\n";
+            "\nIllegal instruction trap.\n";
 
         while (*msg != '\0')
         {

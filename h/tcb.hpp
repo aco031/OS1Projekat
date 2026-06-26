@@ -37,10 +37,10 @@ public:
 
     static TCB *createThread(Body body, void* arg, uint64* stackSpace);
 
-    // Samo zbog kompatibilnosti sa starim Markovim workerBodyA() testovima.
+    // Samo zbog kompatibilnosti sa starim testovima
     static TCB *createThread(BodyNoArg body);
 
-    // Samo zbog TCB::createThread(nullptr) za main nit.
+    // Samo zbog TCB::createThread(nullptr) za main nit
     static TCB *createThread(decltype(nullptr));
 
     static void yield();
